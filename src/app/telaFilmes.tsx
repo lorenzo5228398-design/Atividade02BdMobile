@@ -1,6 +1,7 @@
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { Filme } from "@/types/Filme";
+import { collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { db } from "../../firebaseConfig";
 import { filmes as FilmeCard } from "../components/filmes";
 
@@ -19,10 +20,80 @@ export default function TelaFilmes() {
             { text: "Sim", style: "destructive", onPress: () => deleteDoc(doc(db, "filmes", id)) }
         ]);
     }
+
+    async function ordernarPorNome() {
+        setFilmesLista([])
+
+        try {
+            const filmeRef = collection(db, 'filmes');
+            const q = query(filmeRef, orderBy('nome', 'asc'));
+            const querySnapshot = await getDocs(q);
+
+            const novaLista: Filme[] = []
+
+            querySnapshot.docs.forEach((doc) => {
+                const filme = {
+                    ...doc.data()
+                } as Filme
+                novaLista.push(filme)
+
+            })
+            setFilmesLista(novaLista)
+
+        }
+        catch (e) {
+            console.error("Erro ao filtrar por nome.", e)
+        }
+    }
+
+    async function ordernarPorAno() {
+        setFilmesLista([])
+
+        try {
+            const filmeRef = collection(db, 'filmes');
+            const q = query(filmeRef, orderBy('anoLancamento', 'desc'));
+            const querySnapshot = await getDocs(q);
+
+            const novaLista: Filme[] = []
+
+            querySnapshot.docs.forEach((doc) => {
+                const filme = {
+                    ...doc.data()
+                } as Filme
+                novaLista.push(filme)
+
+            })
+            setFilmesLista(novaLista)
+
+        }
+        catch (e) {
+            console.error("Erro ao filtrar por nome.", e)
+        }
+    }
+
     return (
         <View style={estilos.container}>
-            <Text style={estilos.titulo}>Catálogo de Filmes</Text>
-            
+            <View>
+                <Text style={estilos.titulo}>Catálogo de Filmes</Text>
+                <View style={estilos.containerOrdernar}>
+
+                    <Pressable
+
+                        onPress={ordernarPorNome}
+                    >
+                        <Text style={estilos.textoOrdenar}>Ordenar por nome</Text>
+                    </Pressable>
+
+                    <Pressable
+
+                        onPress={ordernarPorAno}
+                    >
+                        <Text style={estilos.textoOrdenar}>Ordenar por ano</Text>
+                    </Pressable>
+                </View>
+            </View>
+
+
             <FlatList
                 data={filmesLista}
                 keyExtractor={(item) => item.id}
@@ -35,8 +106,8 @@ export default function TelaFilmes() {
                             genero={item.genero}
                             diretor={item.diretor}
                         />
-                        <TouchableOpacity 
-                            style={estilos.botaoExcluir} 
+                        <TouchableOpacity
+                            style={estilos.botaoExcluir}
                             onPress={() => deletarFilme(item.id)}
                         >
                             <Text style={estilos.textoBotaoExcluir}>Excluir Filme</Text>
@@ -54,6 +125,12 @@ const estilos = StyleSheet.create({
         flex: 1,
         padding: 20,
         backgroundColor: '#f5f5f5'
+    },
+    containerOrdernar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+
+
     },
     titulo: {
         fontSize: 22,
@@ -84,5 +161,12 @@ const estilos = StyleSheet.create({
         marginTop: 20,
         fontSize: 16,
         color: '#666'
+    },
+    textoOrdenar: {
+        fontSize: 15,
+        marginBottom: 10,
+
+
+
     }
 });
