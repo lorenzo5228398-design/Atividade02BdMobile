@@ -1,4 +1,5 @@
 type Filme = {
+    id: string;
     nome: string;
     anoLancamento: number;
     idadeIndicativa: number;
@@ -8,3 +9,4 @@ type Filme = {
 }
 
 export type { Filme };
+

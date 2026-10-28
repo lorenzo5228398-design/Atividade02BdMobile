@@ -1,5 +1,5 @@
 import { Filme } from "@/types/Filme";
-import { collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { db } from "../../firebaseConfig";
@@ -9,9 +9,16 @@ export default function TelaFilmes() {
     const [filmesLista, setFilmesLista] = useState<any[]>([]);
 
     useEffect(() => {
-        return onSnapshot(collection(db, 'filmes'), (snapshot) => {
-            setFilmesLista(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
+        const buscarFilmes = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, 'filmes'));
+                setFilmesLista(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            } catch (error) {
+                console.error("Erro ao buscar filmes: ", error);
+            }
+        };
+
+        buscarFilmes();
     }, []);
 
     function deletarFilme(id: string) {
@@ -33,6 +40,7 @@ export default function TelaFilmes() {
 
             querySnapshot.docs.forEach((doc) => {
                 const filme = {
+                    id: doc.id,
                     ...doc.data()
                 } as Filme
                 novaLista.push(filme)
@@ -58,6 +66,7 @@ export default function TelaFilmes() {
 
             querySnapshot.docs.forEach((doc) => {
                 const filme = {
+                    id: doc.id,
                     ...doc.data()
                 } as Filme
                 novaLista.push(filme)
@@ -100,6 +109,7 @@ export default function TelaFilmes() {
                 renderItem={({ item }) => (
                     <View style={estilos.itemContainer}>
                         <FilmeCard
+
                             nome={item.nome}
                             anoLancamento={item.anoLancamento}
                             idadeIndicativa={item.idadeIndicativa}
